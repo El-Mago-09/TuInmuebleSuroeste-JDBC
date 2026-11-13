@@ -1,0 +1,7 @@
+# Configuración local con credenciales (no se sube al repositorio)
+db.properties
+
+# Archivos compilados
+out/
+bin/
+*.class

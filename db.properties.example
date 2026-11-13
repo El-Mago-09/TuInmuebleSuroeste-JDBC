@@ -1,0 +1,5 @@
+# Copie este archivo como db.properties y escriba su contraseña de MySQL.
+# db.properties está en .gitignore y NO se sube al repositorio.
+db.url=jdbc:mysql://localhost:3306/tu_inmueble_suroeste?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota
+db.usuario=root
+db.contrasena=
