@@ -64,6 +64,23 @@ public class Main {
         System.out.println("   Eliminado: " + INMUEBLE_DAO.eliminar(idNuevo));
         imprimirLista(INMUEBLE_DAO.listarTodos());
 
+        System.out.println("\n6. REGISTRO INEXISTENTE: consultar, actualizar y eliminar el id " + idNuevo);
+        System.out.println("   Consulta: " + INMUEBLE_DAO.consultarPorId(idNuevo)
+                .map(Inmueble::toString).orElse("no existe"));
+        System.out.println("   Actualizado: " + INMUEBLE_DAO.actualizar(inmuebleEditado));
+        System.out.println("   Eliminado: " + INMUEBLE_DAO.eliminar(idNuevo));
+
+        System.out.println("\n7. DATO INVALIDO: insertar un inmueble con precio negativo");
+        Inmueble inmuebleInvalido = new Inmueble(1, "Lote de prueba invalido", null, "lote",
+                "venta", new BigDecimal("-100"), null, "Jardin", "disponible");
+        try {
+            INMUEBLE_DAO.insertar(inmuebleInvalido);
+            System.out.println("   ERROR: la base de datos acepto un precio negativo");
+        } catch (SQLException e) {
+            System.out.println("   Rechazado por la base de datos (chk_inmuebles_precio): " + e.getMessage());
+        }
+        System.out.println("   Total de inmuebles: " + INMUEBLE_DAO.listarTodos().size());
+
         System.out.println("\n=== CRUD completado correctamente ===");
     }
 
@@ -79,14 +96,19 @@ public class Main {
             System.out.println("0. Salir");
             opcion = leerEntero("Opcion: ");
 
-            switch (opcion) {
-                case 1 -> registrarInmueble();
-                case 2 -> imprimirLista(INMUEBLE_DAO.listarTodos());
-                case 3 -> consultarInmueble();
-                case 4 -> actualizarInmueble();
-                case 5 -> eliminarInmueble();
-                case 0 -> System.out.println("Hasta luego.");
-                default -> System.out.println("Opcion no valida.");
+            // Un error en una operacion no cierra el programa: se informa y se vuelve al menu.
+            try {
+                switch (opcion) {
+                    case 1 -> registrarInmueble();
+                    case 2 -> imprimirLista(INMUEBLE_DAO.listarTodos());
+                    case 3 -> consultarInmueble();
+                    case 4 -> actualizarInmueble();
+                    case 5 -> eliminarInmueble();
+                    case 0 -> System.out.println("Hasta luego.");
+                    default -> System.out.println("Opcion no valida.");
+                }
+            } catch (SQLException e) {
+                System.out.println("No se pudo completar la operacion: " + e.getMessage());
             }
         } while (opcion != 0);
     }
@@ -128,7 +150,7 @@ public class Main {
         inmueble.setDescripcion(leerTexto("Descripcion: "));
         inmueble.setTipo(leerTexto("Tipo (casa, apartamento, finca, lote, local): "));
         inmueble.setOperacion(leerTexto("Operacion (venta / arriendo): "));
-        inmueble.setPrecio(new BigDecimal(leerTexto("Precio: ")));
+        inmueble.setPrecio(leerPrecio("Precio: "));
         inmueble.setDireccion(leerTexto("Direccion: "));
         inmueble.setMunicipio(leerTexto("Municipio: "));
         inmueble.setEstado(leerTexto("Estado (disponible, reservado, vendido, arrendado): "));
@@ -144,6 +166,20 @@ public class Main {
     private static String leerTexto(String mensaje) {
         System.out.print(mensaje);
         return LECTOR.nextLine().trim();
+    }
+
+    private static BigDecimal leerPrecio(String mensaje) {
+        while (true) {
+            try {
+                BigDecimal precio = new BigDecimal(leerTexto(mensaje));
+                if (precio.signum() > 0) {
+                    return precio;
+                }
+                System.out.println("El precio debe ser mayor que cero.");
+            } catch (NumberFormatException e) {
+                System.out.println("Escriba un precio valido, por ejemplo 350000000.");
+            }
+        }
     }
 
     private static int leerEntero(String mensaje) {
